@@ -1,0 +1,176 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%2345678901234567890123456789012345678901234567890123456789012345678901234567890
+%        1         2         3         4         5         6         7         8
+
+\documentclass[letterpaper, 10 pt, conference]{ieeeconf}  % Comment this line out
+                                                          % if you need a4paper
+%\documentclass[a4paper, 10pt, conference]{ieeeconf}      % Use this line for a4
+                                                          % paper
+
+\IEEEoverridecommandlockouts                              % This command is only
+                                                          % needed if you want to
+                                                          % use the \thanks command
+\overrideIEEEmargins
+% See the \addtolength command later in the file to balance the column lengths
+% on the last page of the document
+
+\usepackage[utf8]{inputenc} 
+
+
+ 
+% The following packages can be found on http:\\www.ctan.org
+%\usepackage{graphics} % for pdf, bitmapped graphics files
+%\usepackage{epsfig} % for postscript graphics files
+%\usepackage{mathptmx} % assumes new font selection scheme installed
+%\usepackage{times} % assumes new font selection scheme installed
+%\usepackage{amsmath} % assumes amsmath package installed
+%\usepackage{amssymb}  % assumes amsmath package installed
+
+\title{\LARGE \bf
+VisBig : Visualize Big Data in Real Time
+}
+
+%\author{ \parbox{3 in}{\centering Huibert Kwakernaak*
+%         \thanks{*Use the $\backslash$thanks command to put information here}\\
+%         Faculty of Electrical Engineering, Mathematics and Computer Science\\
+%         University of Twente\\
+%         7500 AE Enschede, The Netherlands\\
+%         {\tt\small h.kwakernaak@autsubmit.com}}
+%         \hspace*{ 0.5 in}
+%         \parbox{3 in}{ \centering Pradeep Misra**
+%         \thanks{**The footnote marks may be inserted manually}\\
+%        Department of Electrical Engineering \\
+%         Wright State University\\
+%         Dayton, OH 45435, USA\\
+%         {\tt\small pmisra@cs.wright.edu}}
+%}
+
+\author{Gonçalo Fialho \\ 
+        Instituto Superior Técnico \\
+        Universidade de Lisboa \\ 
+        Av. Rovisco Pais, 1049-001 Lisboa, Portugal \\
+        Email: goncalo.f.pires@tecnico.ulisboa.pt }
+    %    \and  
+    %    Gonçalo Fialho \\ 
+    %    Instituto Superior Técnico \\
+    %    Universidade de Lisboa \\ 
+    %    Av. Rovisco Pais, 1049-001 Lisboa, Portugal \\
+    %    Email: goncalo.f.pires@tecnico.ulisboa.pt 
+    %    }
+
+        % <-this % stops a space
+%\thanks{*This work was not supported by any organization}% <-this % stops a space
+%\thanks{$^{1}$H. Kwakernaak is with Faculty of Electrical Engineering, Mathematics and Computer Science,
+%        Instituto Superior Técnico, Universidade de Lisboa, Portugal
+%        {\tt\small h.kwakernaak at papercept.net}}%
+%\thanks{$^{2}$P. Misra is with the Department of Electrical Engineering, Wright State University,
+%        Dayton, OH 45435, USA
+%        {\tt\small p.misra at ieee.org}}%
+%}
+
+\makeatletter
+\let\NAT@parse\undefined
+\makeatother
+\usepackage[pdftex]{hyperref}
+
+\begin{document}
+
+
+
+\maketitle
+\thispagestyle{plain}
+\pagestyle{plain}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{abstract}
+
+Nowadays information devices can be found anywhere, whether in a personal computer, smartwatch or even in our appliances. These devices create relevant information to the identification of patterns or anomalies of the systems in question. Given the significant growth of those devices, some display methods are no longer able to respond effectively to users needs. Although there are solutions to visualize this type of information it's important to look for new ways to present them in a real-time environment so users can act quickly to the abrupt change of the regular flow of data so they can attempt to soften or solve the problems of the systems under analysis. This thesis provides a solution for presenting large amounts of real-time data where users are able to identify anomalies and trends in information as well as maintain context when changes in data flow exist.
+
+We propose \textit{VisMillion}, a visualization interface for large amounts of data in real time. Based on \textit{CANVAS} technology that allows graphical rendering through \textit{Javascript}. This approach enables any device that supports HTML5 run the interface without the need of installation of additional libraries, or the existence of OS dependencies. Using different modules the system represents data in many ways. The more recent the data, the more detailed it is, so each module uses different techniques to aggregate and process information. 
+
+This report does a state-of-the-art analysis for viewing large amounts of data in real time. Then it presents the architecture of the solution (backend / real-time and interface / visualization) and its justifications for the options taken. Finally carries out a detailed evaluation of the obtained results and a final analysis and reflection where some of the future work is also mentioned which could improve the system.
+
+Keywords -  Large ammount of data, BigData, Real-Time, Streaming, Visualization, Flow, Trend, Outliers, Patterns
+
+\end{abstract}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{INTRODUCTION}
+
+
+With exponential increase of devices capable of generating information (from the simplest smarthphones to supercomputers) it was necessary to find ways to make the visualization simple and effective, so the user won't be misled by elements that are not part of the data. Many systems create a lot of data that must be analyzed, companies like \textit{Amazon} or \textit{Facebook} need to keep track of all the activities performed by the users so they can interpret trends and patters to create marketing strategies for their business. Robots and Complex Networks generate logs that are important to analyze in case of failures. This is some examples that lead to the emergence of big chunks of information and it is therefore increasingly common to observe the growth of the storage capacity of the devices.
+
+This agglomerated information that creates large chunks of data is typically called as \textbf{Big Data}. However, the term does not have a specific definition and there is no exact value to a dataset can be considered as Big Data \cite{WardB13a}. This data is so large that the tools that process this information cannot do it in a tolerable time interval and its necessary to use more efficient methods. One of the most common uses for this kind of data is to visualize it through representations that show patterns and particular details about them. Its representation can be done from a greater degree of detail of each point to aggregations that describe a lot of points with just an element. Yet, the large amounts of data makes the discovery of relevant items more difficult causing a more complex and time-consuming analysis. Furthermore its hard to represent all the information just in once because the resolution of the displays could not be enough to represent all the points and Humans have difficulties to understand small parts of data when the datasets are huge, losing the context of their search. To overcome this, data is represented with different levels of detail aggregating information at some point. 
+
+The rise of distributed systems raises this problem to a new scale where it is necessary to monitor real-time changes in case of need for rapid intervention in problems that can occur. The more the servers are the more data will exist and each one have different workload making the amount of data generated by second different and that could cause abrupt changes in the visualization of these systems.
+
+There are challenges that visualization of large amounts of data in real time can arise. First, the processing and rendering phases of this data can be slow. Second, unlike a static environment where the data is always on the same spot, real-time data is constantly coming and there is no way to keep the representation state unmodified and explorable like in a fixed dataset. Third, there is no time to wait for new data to process statistics, this process should always be done the fast as possible so the user could retrieve and get the information to act if necessary. Additionally is important to understand the data domain that is visualized so it can be possible to prevent failures and the systems could adapt to data changes so the users cannot be harmed. 
+
+With this in mind we have created VisMillion, which is a interface that represents large amounts of data in real time. Our main goal is to \textbf{provide new information visualization techniques capable of representing large amounts of data in real time that allows the user to perceive the global context of the information as new packages are received}.
+
+Using \textit{Information Seeking Mantra} approach \cite{545307} the user is capable to get a global overview of the system and detect interesting patterns using sub visualizations he will explore more details about it. To make this happen the information will be aggregated over time so recent data is always more detailed than the old one, using statistical methods the data is represented in many ways. The user should also be capable to identify \textit{outliers} (anomalies) using different methods that are described in the next sections.
+
+The system is built to be suitable with the debit differences and keep the user updated to all changes that can occur without misleading the user interpretation and make this changes obvious.
+
+
+
+% https://www.scribens.com/
+% https://www.thesaurus.com/
+
+
+
+\section{PROCEDURE FOR PAPER SUBMISSION}
+
+\subsection{Selecting a Template (Heading 2)}
+
+\subsection{Maintaining the Integrity of the Specifications}
+
+\section{MATH}
+
+\subsection{Units}
+
+\subsection{Equations}
+
+\subsection{Some Common Mistakes}
+
+
+\section{USING THE TEMPLATE}
+
+
+\subsection{Headings, etc}
+
+\subsection{Figures and Tables}
+
+
+\section{CONCLUSIONS}
+
+
+\addtolength{\textheight}{-12cm}   % This command serves to balance the column lengths
+                                  % on the last page of the document manually. It shortens
+                                  % the textheight of the last page by a suitable amount.
+                                  % This command does not take effect until the next page
+                                  % so it should come on the page before the last. Make
+                                  % sure that you do not shorten the textheight too much.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\bibliographystyle{unsrt}
+\bibliography{abstract.bib}
+
+\end{document}
