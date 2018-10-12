@@ -67,13 +67,16 @@ VisBig : Visualize Big Data in Real Time
 %        Dayton, OH 45435, USA
 %        {\tt\small p.misra at ieee.org}}%
 %}
+\usepackage{float}
 
 \makeatletter
 \let\NAT@parse\undefined
 \makeatother
+
 \usepackage[pdftex]{hyperref}
 
 \usepackage{graphicx}
+
 \begin{document}
 
 
@@ -204,8 +207,99 @@ The connection between modules allows that information flows through them from r
 It were implemented 3 modules: \textit{Linechart}, \textit{Barchart} and \textit{Scatterchart}. Each one represents one visualization idiom. The goal was to found navigation methods that allow the user to understand the data flow in real time, each one presents different metrics, scattercharts draws points that represents each package, linecharts represents the data tendencies and barcharts (or histograms) the information aggregation between values.
 Each time the packages pass through a new module they are aggregated in some way and they should be transformed using smooth animations to their new form making that "graceful degradation" and letting the user won't be misled by abrupt disappearances or changes in the elements. 
 
-continuar em 
-Linha 40 vismillion
+For the interaction with each module it was decided that the interface should be as simple as possible and not lead the user to a complex exploration of the information. The user is able to mouse hover the interface, this triggers a tooltip of the corresponding module and displays the information of the overlapping elements. Since this information is always moving (real-time), it was decided that this information should not be updated as the elements navigate through the chart, otherwise the user would have more difficulty tracking the mouse by the elements. This means that tooltip information is only updated when there is mouse movement created by the user.
+
+In one hand, the visualization of the global chart allows an analysis that corresponds to free exploration of the information. On the other hand, the module visualization allows the user to make another search tasks depending on the type of data that the user wants to extract from a specific idiom. Searches can be done by time interval or directly orientated of the median values, using different methods there are some characteristics that can be found as anomalies or data aggregations. \newline 
+These methods allow requirements like \textit{Expressiveness} and \textit{Effectiveness} \cite{Mackinlay} to be successfully followed since the main purpose of the system is that user won't be lost in its data visualization navigation and can have explicit information about the data visualized by modules.
+
+\subsection{Implementation}
+\label{subsection:implementation}
+In the first implementation approach it was used SVG elements to create the charts. Due the lack of scalability (when it comes about large amounts of data) there was a need to rethink how the web interface should behave and how was goint to be implemented in order to allow large amounts of data. The final solution was reached using \textit{canvas} API that allows users draw elements in a a rectangle using \textit{Javascript} to make the processing along with D3 framework. Dispite this solution has better performance results than manipulating SVG elements, D3 does not support element animations on \textit{canvas}. 
+
+The class architecture for the system is presented at \ref{fig:uml}, the main class is called \textbf{Chart} and its responsible to coordinate all the modules that belong to it and with the server, data is stored at this module and afterwards filtered to each component. Since the interface follows the \textit{Update \& Draw} architecture there are 3 fundamental methods on these classes, \textbf{Chart} makes those calls for each module that exists. There is a abstract class called \textbf{Module} and all other three modules inherit from it (linechart, scatterchart, linechart). The first method is \textit{Update} and represents the processing phase of the data for each module. Second method is \textit{Draw}, at this stage all the elements from that component are printed to \textit{canvas}. The last method is the \textit{mouseHover} event that triggers a tooltip and presents the information about the hovered element. 
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Figures/uml.png}
+    \caption{UML classes from \textit{VisMillion}}
+        \label{fig:uml}
+\end{figure}
+
+The \textbf{Connection} component is a extension from Chart that creates the communication between the server and the interface, this class receives the packages and then appends it with a timestamp (if the packages does not came with one) to the data array saved by the \textbf{Chart}. This extension also allows the user to change the data flow in testing phase.
+
+
+
+\subsubsection{Chart}
+\label{subsubsection:chart}
+
+\begin{figure*}[ht]
+    \centering
+  \includegraphics[width=\linewidth]{Figures/chart.png}
+  \caption{Chart Overview}
+  \label{fig:chart}
+\end{figure*}
+
+This system allows the interaction through all the modules so the \textit{Interactive Exploration} requirement can be ruled by this method. The data navigation implemented by the system let the locality of changes and preservation of the temporal context requisites being fulfilled by the interface.\newline
+The chart is responsible to maintain this techniques align to each component, using the same scale function and domains to all the modules environments. These attributes are assigned by the users on the creation of the \textit{Chart} and usually cannot be updated in run time. Figure \ref{fig:chart} represents a Chart and its modules.
+
+\subsubsection{Modules}
+\label{subsubsection:modules}
+The initialization of each module have some global attributes that need to be set like \textit{deltaRange} that describes the time interval in seconds the module should present. The width is evenly distributed by all the modules of a Chart. In the update phase each module asks the Chart for the data packages that are in its data interval. Since the packages navigate through each module from right to left the change between modules must be slowly degraded so the user won't lose its visualization context.
+
+The implemented modules were carefully chosen given its visualization complexity (how familiar are the users to them and if the idiom is easy to understand). Globally, they complement each other well, and the required tasks can be executed with them: Flow and Trend analysis, identification of anomalies and non-typical aggregations, medians, max and min, etc.
+
+
+\subsubsection{Barchart}
+\label{subsubsection:barchart}
+\textbf{Barchart} module does not need a time interval since its horizontal axis does not represent time like the other modules. Instead, it represents a frequency. For this reason, this module should be located the most left as possible. Each bar represents the amount of packages received in a given data value interval, this will create a phenomenon of aggregation leads the user to understand the intervals where there are more packages with a certain value. \newline 
+This approach takes into account the maintenance of the temporal context of all the information already receibed so far and making the information analysis more complete in a long term. Figure \ref{fig:barchart} shows a Barchart module.
+
+As it is added new data to the bars, the bar that received a package blinks and grows slowly with a transition so the user can understand the moments where new information is arriving to the module.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Figures/barchart.png}
+    \caption{Barchart}
+        \label{fig:barchart}
+\end{figure}
+
+Using the \textit{mouseHover} function the user is able to get the interval of the values of the bar and the frequency of packages placed in that interval.
+
+\subsubsection{Linechart}
+\label{subsubsection:linechart}
+With the \textbf{Linechart} module the user is capable to understand patterns and tendencies about the information. The horizontal axis now represent the time interval set by the user. It was created a line connection between all the points that belong to the time interval. However in high amounts of data this approach wouldn't work because the user won't be capable to understand the condensed data points. So it were created two states, the \textit{high} and \textit{low} flow. Low flow connects all the packages, while High flow aggregate the data using \textit{Boxplots} approach, the module is divided by sections and then quartiles, median, max and min are calculated for each section. After this calculations a linechart connects all the sections with a different color for each metric creting a more understandable visualization. Figure \ref{fig:linechart} represents a linechart, where top and bottom lines are the maximum and minimum values respectively. Median is given by the orange line and 1º quartile and 3º quartile by the red and purpule colors.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Figures/linechart.png}
+    \caption{Linechart}
+        \label{fig:linechart}
+\end{figure}
+
+The interactions with this module shows the values for each attribute of a section.
+
+\subsubsection{Scatterchart}
+\label{subsubsection:scatterchart}
+This visualization idiom can represent the data flow very easily, letting the user know what are the moments where exist more data incoming. This is the module that presents the most detailed information since all received packets are rendered. 
+
+Like Linechart, Scatterchart also has the \textit{high} and \textit{low} flow states. The reason why this is needed is because there is a limit where FPS drop substantially, making the visualization not understandable anymore. The low flow state represents the all the packages received as a dot. The high flow state creates a heatmap in which the areas where the more colored the regions are the higher the concentrations of points will be. Unlike Linechart, the flow states in this module can coexist, overlapping each other and creating a simpler analysis of patterns.
+
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Figures/scatterchart.png}
+    \caption{Scatterchart}
+        \label{fig:scatterchart}
+\end{figure}
+
+The interaction performed with this module results in the overlap of the mouse in the squares indicating the time interval and values associated with that packet as well as the number of elements contained in it.
+
+\subsubsection{Outliers}
+\label{subsubsection:outliers}
+This module was created to represent the points that the user considers to be outliers. As in other works \cite{4015444}, this type of data is treated in separate views for a better understanding and coherence of the system. For this work the outliers are all values that are above the vertical domain defined by the user.
+
+Being a component that does not require so much attention of the user (since the presence of these values must be atypical), the complexity of representation must be smaller than the other modules. This graphic is positioned at the top of the interface since the values represented in it are always larger than the domain (context maintenance).
+The module occupies the entire width of the Chart allowing a more lasting visualization of the atypical values occurred.
 
 % https://www.scribens.com/
 % https://www.thesaurus.com/
